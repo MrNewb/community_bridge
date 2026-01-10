@@ -162,8 +162,7 @@ end
 
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
-    -- Version.VersionChecker("TheOrderFivem/community_bridge", false)
-    Version.AdvancedVersionChecker("TheOrderFivem/patchnotes", resourceName)
+    Version.AdvancedVersionChecker("MrNewb/patchnotes", resourceName)
 end)
 
 return Version
