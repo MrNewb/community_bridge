@@ -1,14 +1,14 @@
 ---@diagnostic disable: duplicate-set-field
 if GetResourceState('es_extended') ~= 'started' then return end
 
+local cachedItemList = nil
+
 Prints = Prints or Require("lib/utility/shared/prints.lua")
 Callback = Callback or Require("lib/callback/shared/callback.lua")
 
 ESX = exports.es_extended:getSharedObject()
 
 Framework = Framework or {}
-
-local cachedItemList = nil
 
 --- @description This will return the name of the framework in use
 --- @return string
@@ -256,7 +256,6 @@ end
 --- @param src number
 --- @return boolean
 Framework.RevivePlayer = function(src)
-    src = tonumber(src)
     if not src then return false end
     TriggerEvent('esx_ambulancejob:revive', src)
     return true
@@ -529,6 +528,15 @@ Framework.RegisterUsableItem = function(itemName, cb)
         cb(src, itemData)
     end
     ESX.RegisterUsableItem(itemName, func)
+end
+
+Framework.AddCommand = function(name, help, arguments, argsrequired, callback, permission, ...)
+    ESX.RegisterCommand(name, permission, function(xPlayer, args, showError)
+        callback(xPlayer, args)
+    end, false, {
+        help = help,
+        arguments = arguments
+    })
 end
 
 ---@description Event handler for when a player is loaded in ESX framework
