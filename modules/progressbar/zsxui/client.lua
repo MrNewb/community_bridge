@@ -5,6 +5,10 @@ if (configValue == "auto" and GetResourceState(resourceName) ~= "started") or (c
 
 ProgressBar = ProgressBar or {}
 
+ProgressBar.GetResourceName = function()
+    return "ZSX_UIV2"
+end
+
 ---This function converts an Ox progress bar options table to a QB progress bar options table.
 ---@param options table
 ---@return table
@@ -56,8 +60,11 @@ function ProgressBar.Open(options, cb, qbFormat)
         options = convertFromOx(options)
     end
     local prom = promise.new()
-    exports['ZSX_UIV2']:ProgressBar('fas fa-circle-notch', options.label or options.name, options.duration,
-        function() -- onFinish
+    local prop1 = next(options.prop) and options.prop.model and options.prop or nil
+    local prop2 = next(options.propTwo) and options.propTwo.model and options.propTwo or nil
+
+    exports['ZSX_UIV2']:ProgressBar('check', options.label or options.name, options.duration,
+        function()
             if cb then cb(true) end
             prom:resolve(true)
         end,
@@ -68,14 +75,12 @@ function ProgressBar.Open(options, cb, qbFormat)
         options.canCancel,
         options.controlDisables,
         options.animation,
-        options.prop,
-        options.propTwo
+        prop1,
+        --options.prop,
+        prop2
+        --options.propTwo
     )
     return Citizen.Await(prom)
-end
-
-ProgressBar.GetResourceName = function()
-    return "ZSX_UIV2"
 end
 
 return ProgressBar
