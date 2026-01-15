@@ -63,7 +63,7 @@ function ProgressBar.Open(options, cb, qbFormat)
     local prop1 = next(options.prop) and options.prop.model and options.prop or nil
     local prop2 = next(options.propTwo) and options.propTwo.model and options.propTwo or nil
 
-    exports['ZSX_UIV2']:ProgressBar('check', options.label or options.name, options.duration,
+    exports['ZSX_UIV2']:ProgressBar('check', options.label or options.name, options.duration or 5000,
         function()
             if cb then cb(true) end
             prom:resolve(true)
@@ -76,9 +76,7 @@ function ProgressBar.Open(options, cb, qbFormat)
         options.controlDisables,
         options.animation,
         prop1,
-        --options.prop,
         prop2
-        --options.propTwo
     )
     return Citizen.Await(prom)
 end
