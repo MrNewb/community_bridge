@@ -68,7 +68,7 @@ function ProgressBar.Open(options, cb, qbFormat)
             if cb then cb(true) end
             prom:resolve(true)
         end,
-        function() -- onCancel
+        function()
             if cb then cb(false) end
             prom:resolve(false)
         end,
