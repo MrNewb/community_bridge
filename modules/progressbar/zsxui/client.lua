@@ -9,42 +9,77 @@ ProgressBar.GetResourceName = function()
     return "ZSX_UIV2"
 end
 
----This function converts an Ox progress bar options table to a QB progress bar options table.
+---This function converts an Ox progress bar options table to ZSX_UIV2 format.
 ---@param options table
 ---@return table
 local function convertFromOx(options)
     if not options then return options end
     local prop1 = options.prop?[1] or options.prop or {}
     local prop2 = options.prop?[2] or {}
+
     return {
-        name = options.label,
-        duration = options.duration,
         label = options.label,
-        useWhileDead = options.useWhileDead,
+        duration = options.duration,
         canCancel = options.canCancel,
-        controlDisables = {
-            disableMovement = options.disable?.move,
-            disableCarMovement = options.disable?.car,
-            disableMouse = options.disable?.mouse,
-            disableCombat = options.disable?.combat
+        disableControls = {
+            disable_mouse = options.disable?.mouse,
+            disable_walk = options.disable?.move,
+            disable_driving = options.disable?.car,
+            disable_combat = options.disable?.combat
         },
-        animation = {
-            animDict = options.anim?.dict,
-            anim = options.anim?.clip,
-            flags = options.anim?.flag or 49
-        },
-        prop = {
+        anim = options.anim and {
+            dict = options.anim.dict,
+            clip = options.anim.clip,
+            flag = options.anim.flag or 49
+        } or nil,
+        prop1 = prop1.model and {
             model = prop1.model,
             bone = prop1.bone,
-            coords = prop1.pos,
-            rotation = prop1.rot
-        },
-        propTwo = {
+            pos = prop1.pos,
+            rot = prop1.rot
+        } or nil,
+        prop2 = prop2.model and {
             model = prop2.model,
             bone = prop2.bone,
-            coords = prop2.pos,
-            rotation = prop2.rot
-        }
+            pos = prop2.pos,
+            rot = prop2.rot
+        } or nil
+    }
+end
+
+---This function converts a QB progress bar options table to ZSX_UIV2 format.
+---@param options table
+---@return table
+local function convertFromQB(options)
+    if not options then return options end
+
+    return {
+        label = options.label,
+        duration = options.duration,
+        canCancel = options.canCancel,
+        disableControls = {
+            disable_mouse = options.controlDisables?.disableMouse,
+            disable_walk = options.controlDisables?.disableMovement,
+            disable_driving = options.controlDisables?.disableCarMovement,
+            disable_combat = options.controlDisables?.disableCombat
+        },
+        anim = options.animation and {
+            dict = options.animation.animDict,
+            clip = options.animation.anim,
+            flag = options.animation.flags or 49
+        } or nil,
+        prop1 = options.prop and options.prop.model and {
+            model = options.prop.model,
+            bone = options.prop.bone,
+            pos = options.prop.coords,
+            rot = options.prop.rotation
+        } or nil,
+        prop2 = options.propTwo and options.propTwo.model and {
+            model = options.propTwo.model,
+            bone = options.propTwo.bone,
+            pos = options.propTwo.coords,
+            rot = options.propTwo.rotation
+        } or nil
     }
 end
 
@@ -56,14 +91,16 @@ end
 function ProgressBar.Open(options, cb, qbFormat)
     if not exports['ZSX_UIV2'] then return false end
 
-    if not qbFormat then
+    if qbFormat then
+        options = convertFromQB(options)
+    else
         options = convertFromOx(options)
     end
     local prom = promise.new()
-    local prop1 = next(options.prop) and options.prop.model and options.prop or nil
-    local prop2 = next(options.propTwo) and options.propTwo.model and options.propTwo or nil
-
-    exports['ZSX_UIV2']:ProgressBar('check', options.label or options.name, options.duration or 5000,
+    exports['ZSX_UIV2']:ProgressBar(
+        'fas fa-circle-notch',
+        options.label,
+        options.duration or 5000,
         function()
             if cb then cb(true) end
             prom:resolve(true)
@@ -73,10 +110,10 @@ function ProgressBar.Open(options, cb, qbFormat)
             prom:resolve(false)
         end,
         options.canCancel,
-        options.controlDisables,
-        options.animation,
-        prop1,
-        prop2
+        options.disableControls,
+        options.anim,
+        options.prop1,
+        options.prop2
     )
     return Citizen.Await(prom)
 end
