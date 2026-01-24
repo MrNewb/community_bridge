@@ -6,9 +6,20 @@ By bridging core game systems including inventory, dispatch, targeting, door loc
 
 ---
 
-![](https://img.shields.io/github/contributors/TheOrderFivem/community_bridge?logo=github)
-![](https://img.shields.io/github/v/release/TheOrderFivem/community_bridge?logo=github)
+## Why is there a fork?
+This fork is maintained specifically for users of MrNewbScripts and serves as a testbed for newer or experimental features that are not yet merged into the main org.
 
+The goals of this fork are:
+
+Safe testing of new functionality without affecting the official project
+
+Faster hotfixes when issues arise in MrNewbScripts-dependent environments
+
+A reliable legacy version that remains stable and usable even if life events or downtime prevent immediate updates to the main repository
+
+Zero disruption to the upstream project, keeping all experiments isolated and non-invasive
+
+If you use MrNewbScripts resources, this fork ensures you always have a compatible version of Community Bridge without a need to wait.
 
 ## Features
 
@@ -50,56 +61,5 @@ By bridging core game systems including inventory, dispatch, targeting, door loc
 
 * Progress bars, notifications, weather synchronization, and skill system integration
 * Developer tools including 3D interaction points, cutscene management, particle effects, scaleform UI, DUI system, and advanced object placement
-
----
-
-## Documentation
-
-Complete developer documentation is available at:
-[Community Bridge Documentation](https://theorderfivem.github.io/docs)
----
-
-## Community and Support
-
-Join the Community Bridge Discord server for support, discussion, and contributions:
-[Community Discord](https://discord.gg/MukwBuJjP7)
-
----
-
-## About Community Bridge
-
-community_bridge is developed by The Order of the Sacred Framework, a collaborative team focused on improving interoperability and reducing development friction in the FiveM ecosystem. The project is open source and licensed under GPLv3.
-
----
-
-## Why Choose Community Bridge?
-
-* Universal framework compatibility reduces code duplication
-* Modular design allows use of only needed components
-* Extensive developer utilities for advanced scripting and UI
-* Tested in production on hundreds of FiveM servers
-* Open source with active community support and regular updates
-
----
-
-## Frequently Asked Questions
-
-**Q: Will Community Bridge support new frameworks in the future?**
-A: Yes, the project actively tracks emerging frameworks and integrates support accordingly.
-
-**Q: Can Community Bridge work with my custom framework?**
-A: Community Bridge is designed to be extensible and supports integration with custom frameworks.
-
-**Q: How often is the project updated?**
-A: Updates are regularly released to improve compatibility, add features, and fix issues based on community feedback.
-
-**Q: Why is the seo so bad?**
-A: Straight up, I have no clue and have tried everything to improve it. If you have tips PLEASE let me know in the discord or pr some changes to the repos dev branch.
-
----
-
-## Keywords (for SEO)
-
-FiveM framework compatibility, FiveM bridge system, QBCore ESX bridge, FiveM universal inventory, dispatch integration, targeting system, door lock system, vehicle key management, fuel system bridge, clothing system FiveM, FiveM developer tools, roleplay framework integration, Lua scripting FiveM, open source FiveM bridge, cross-framework compatibility, modular FiveM resource
 
 ---
