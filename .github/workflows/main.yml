@@ -4,17 +4,16 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   send-webhook:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
+      # Reads only the release event payload, so no checkout is needed and jq
+      # is already present on the runner image.
       - name: Send webhook notification
         env:
           WEBHOOK_URL: ${{ secrets.RELEASE_WEBHOOK_URL }}
@@ -57,7 +56,7 @@ jobs:
                       "type": 2,
                       "style": 5,
                       "label": "Get The Latest Community Bridge Release",
-                      "url": "https://github.com/The-Order-Of-The-Sacred-Framework/community_bridge/tree/main"
+                      "url": "https://github.com/TheOrderFivem/community_bridge/releases/latest"
                     }
                   ]
                 }

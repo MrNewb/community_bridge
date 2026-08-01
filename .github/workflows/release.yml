@@ -1,0 +1,122 @@
+name: Release
+
+# Publishes a release when a push to main bumps the fxmanifest.lua version.
+# Tags/titles are bare versions (0.13.4) to match this repo's existing releases.
+#
+# The "Update Webhook Notification" workflow listens for release:published, and
+# GitHub suppresses workflow triggers for events raised by GITHUB_TOKEN. Add a
+# classic PAT with repo scope as the RELEASE_PAT secret to keep the Discord
+# announcement firing; without it the release still publishes, silently.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'fxmanifest.lua'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.meta.outputs.should_release }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect fxmanifest version change
+        id: meta
+        run: |
+          CURRENT=$(grep -E '^version ' fxmanifest.lua | sed -E "s/^version[[:space:]]+['\"]([^'\"]+)['\"].*/\1/")
+          echo "version=$CURRENT" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$CURRENT" ]; then
+            echo "::error::No version found in fxmanifest.lua"
+            exit 1
+          fi
+
+          # Never re-release an existing version: a duplicate release would
+          # announce itself to Discord as if it were new.
+          if git rev-parse "refs/tags/$CURRENT" >/dev/null 2>&1; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $CURRENT already exists; skipping release."
+            exit 0
+          fi
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Manual run; releasing version $CURRENT"
+            exit 0
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Initial or force push; releasing version $CURRENT"
+            exit 0
+          fi
+
+          PREVIOUS=$(git show "$BEFORE:fxmanifest.lua" 2>/dev/null | grep -E '^version ' | sed -E "s/^version[[:space:]]+['\"]([^'\"]+)['\"].*/\1/" || true)
+          if [ "$CURRENT" = "$PREVIOUS" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "fxmanifest changed but version is still $CURRENT; skipping release."
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Version updated: ${PREVIOUS:-unknown} -> $CURRENT"
+          fi
+
+  release:
+    runs-on: ubuntu-latest
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Prepare release package
+        run: |
+          RELEASE_ROOT="release/community_bridge"
+          mkdir -p "$RELEASE_ROOT/web"
+
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.gitattributes' \
+            --exclude '.gitignore' \
+            --exclude '.github' \
+            --exclude 'release' \
+            --exclude 'node_modules' \
+            --exclude 'web' \
+            ./ "$RELEASE_ROOT/"
+
+          # Pre-built web/dist/ is committed; ship the built UI only and leave
+          # the vite source and tooling (src/, package.json, configs) behind.
+          rsync -a web/dist/ "$RELEASE_ROOT/web/dist/"
+          rsync -a web/public/ "$RELEASE_ROOT/web/public/"
+
+      - name: Create zip archive
+        run: |
+          cd release
+          zip -r "../community_bridge.zip" community_bridge
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: community_bridge
+          path: community_bridge.zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.RELEASE_PAT || github.token }}
+          tag_name: ${{ needs.check-version.outputs.version }}
+          name: ${{ needs.check-version.outputs.version }}
+          files: community_bridge.zip
+          generate_release_notes: true
